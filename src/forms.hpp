@@ -15,6 +15,8 @@ extern unsigned char icon_Save[1624];
 extern unsigned char btn_OK[1859];
 extern unsigned char btn_CANCEL[2815];
 
+extern unsigned char btn_RESET[1698];
+
 String getStringSplit(String str, char separator, int index)
 {
     int len = str.length();
@@ -83,6 +85,7 @@ class form_Top : public form
 private:
     displayButton BTN_Power;
     displayButton BTN_Config;
+    displayButton BTN_RESET;
 
 public:
     form_Top()
@@ -101,21 +104,30 @@ public:
         formWidth = Display_Main_Canvas.width();
         formHeight = Display_Main_Canvas.height();
 
-        BTN_Config = displayButton();
         // Config ICON Button ===================
+        BTN_Config = displayButton();
         BTN_Config.x = 174;
         BTN_Config.y = 187;
         BTN_Config.width = 52;
         BTN_Config.height = 52;
         BTN_Config.iconData = icon_Setting;
 
-        BTN_Power = displayButton();
         // Power ICON Button ===================
+        BTN_Power = displayButton();
         BTN_Power.x = 249;
         BTN_Power.y = 187;
         BTN_Power.width = 52;
         BTN_Power.height = 52;
         BTN_Power.iconData = icon_Power;
+        // ================================
+
+        // RESET ICON Button ===================
+        BTN_RESET = displayButton();
+        BTN_RESET.x = 249;
+        BTN_RESET.y = 0;
+        BTN_RESET.width = 52;
+        BTN_RESET.height = 52;
+        BTN_RESET.iconData = btn_RESET;
         // ================================
     }
 
@@ -126,8 +138,9 @@ public:
             Display_Main_Canvas.fillScreen(BLACK);
             BTN_Config.draw(Display_Main_Canvas);
             BTN_Power.draw(Display_Main_Canvas);
+            BTN_RESET.draw(Display_Main_Canvas);
 
-            Display_Main_Canvas.setCursor(30, 60);
+            Display_Main_Canvas.setCursor(30, 70);
             if (value < 0)
             {
                 Display_Main_Canvas.setFont(&fonts::Font8);
@@ -158,6 +171,10 @@ public:
             else if (BTN_Config.contain(t))
             {
                 return 2;
+            }
+            else if (BTN_RESET.contain(t))
+            {
+                return 3;
             }
         }
         return 0;
