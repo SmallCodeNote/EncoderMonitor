@@ -39,6 +39,8 @@ extern unsigned char btn_CANCEL[2815];
 extern unsigned char btn_Right[1407];
 extern unsigned char btn_Left[1417];
 
+extern unsigned char btn_RESET[1698];
+
 form *FormView;
 form_Top Form_Top;
 form_ShutdownMessage Form_ShutdownMessage;
@@ -245,6 +247,10 @@ void loop()
             Form_Config.Enc_TargetLength_MAX = (int)(data.Enc_TargetLength * 2.0);
 
             FormView->draw(0, String(data.Enc_PPR) + "\t" + String(data.Enc_TargetLength) + "\t" + String(data.Enc_LPR));
+            break;
+          case 3:
+            Enc_Count = 0;
+            FormView->draw(0, "");
             break;
           default:
             FormView = &Form_Top;
