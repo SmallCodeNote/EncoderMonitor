@@ -16,6 +16,7 @@ extern unsigned char btn_OK[1859];
 extern unsigned char btn_CANCEL[2815];
 
 extern unsigned char btn_RESET[1698];
+extern unsigned char icon_QR[1661];
 
 String getStringSplit(String str, char separator, int index)
 {
@@ -86,6 +87,7 @@ private:
     displayButton BTN_Power;
     displayButton BTN_Config;
     displayButton BTN_RESET;
+    displayButton BTN_QR;
 
 public:
     form_Top()
@@ -129,6 +131,15 @@ public:
         BTN_RESET.height = 52;
         BTN_RESET.iconData = btn_RESET;
         // ================================
+
+        // QR ICON Button ===================
+        BTN_QR = displayButton();
+        BTN_QR.x = 174;
+        BTN_QR.y = 0;
+        BTN_QR.width = 52;
+        BTN_QR.height = 52;
+        BTN_QR.iconData = icon_QR;
+        // ================================
     }
 
     void draw(float value, String text) override
@@ -139,8 +150,9 @@ public:
             BTN_Config.draw(Display_Main_Canvas);
             BTN_Power.draw(Display_Main_Canvas);
             BTN_RESET.draw(Display_Main_Canvas);
+            BTN_QR.draw(Display_Main_Canvas);
 
-            Display_Main_Canvas.setCursor(30, 70);
+            Display_Main_Canvas.setCursor(30, 80);
             if (value < 0)
             {
                 Display_Main_Canvas.setFont(&fonts::Font8);
@@ -175,6 +187,10 @@ public:
             else if (BTN_RESET.contain(t))
             {
                 return 3;
+            }
+            else if (BTN_QR.contain(t))
+            {
+                return 4;
             }
         }
         return 0;
@@ -324,6 +340,64 @@ public:
         else if (BTN_CANCEL.contain(t))
         {
             return 2;
+        }
+        return 0;
+    }
+};
+
+// =====================
+// form_QR
+// =====================
+class form_QR : public form
+{
+private:
+    displayButton BTN_OK;
+    //    displayButton BTN_CANCEL;
+
+public:
+    form_QR()
+    {
+        formName = "QR";
+        formEnable = true;
+    }
+
+    /// @brief Initialize Canvas / Button
+    form_QR(M5Canvas formCanvas, int value)
+    {
+        formName = "QR";
+        formEnable = true;
+
+        Display_Main_Canvas = formCanvas;
+        formWidth = Display_Main_Canvas.width();
+        formHeight = Display_Main_Canvas.height();
+
+        BTN_OK = displayButton();
+        // OK ICON Button ===================
+        BTN_OK.x = 160;
+        BTN_OK.y = 187;
+        BTN_OK.width = 160;
+        BTN_OK.height = 52;
+        BTN_OK.iconData = btn_OK;
+        BTN_OK.enable = true;
+        //=====================
+    }
+
+    void draw(float value, String text)
+    {
+        if (formEnable)
+        {
+            Display_Main_Canvas.fillScreen(BLACK);
+            BTN_OK.draw(Display_Main_Canvas);
+            Display_Main_Canvas.fillRect(0,0,320,180,TFT_WHITE);
+            Display_Main_Canvas.qrcode(text, 50, 20, 140, 4);
+            Display_Main_Canvas.pushSprite(0, 0);
+        }
+    }
+    int touchCheck(m5::touch_detail_t t)
+    {
+        if (BTN_OK.contain(t))
+        {
+            return 1;
         }
         return 0;
     }

@@ -13,6 +13,8 @@ const int Pin_signalB = 33;
 /// @brief Encorder Count
 int Enc_Count = 0;
 
+int Enc_CountLast = 0;
+
 /// @brief Encorder Profile Struct
 struct DATA_SET
 {
@@ -40,12 +42,14 @@ extern unsigned char btn_Right[1407];
 extern unsigned char btn_Left[1417];
 
 extern unsigned char btn_RESET[1698];
+extern unsigned char icon_QR[1661];
 
 form *FormView;
 form_Top Form_Top;
 form_ShutdownMessage Form_ShutdownMessage;
 form_SaveMessage Form_SaveMessage;
 form_Config Form_Config;
+form_QR Form_QR;
 
 /// @brief Main Display
 M5GFX Display_Main;
@@ -183,6 +187,8 @@ void setup()
   Form_ShutdownMessage = form_ShutdownMessage(Display_Main_Canvas, 0);
   Form_SaveMessage = form_SaveMessage(Display_Main_Canvas, 0);
   Form_Config = form_Config(Display_Main_Canvas, 0);
+  Form_QR = form_QR(Display_Main_Canvas, 0);
+
   FormView = &Form_Top;
 
   FormView->formEnable = true;
@@ -252,11 +258,31 @@ void loop()
             Enc_Count = 0;
             FormView->draw(0, "");
             break;
+          case 4:
+            FormView = &Form_QR;
+            FormView->draw(0, String(data.Enc_LPR * Enc_Count / data.Enc_PPR / 1000.0));
+            break;
+
           default:
             FormView = &Form_Top;
             FormView->draw(0, "");
           }
 
+          touchIndex = 0;
+        }
+        else if (touchIndex && FormView == &Form_QR)
+        {
+          switch (touchIndex)
+          {
+          case 1:
+            FormView = &Form_Top;
+            Enc_CountLast = 0;
+            FormView->draw(0, "");
+            break;
+          default:
+            FormView = &Form_Top;
+            FormView->draw(0, "");
+          }
           touchIndex = 0;
         }
         else if (touchIndex && FormView == &Form_ShutdownMessage)
@@ -371,8 +397,10 @@ void loop()
       }
     }
   }
-  else
+
+  if(Enc_CountLast != Enc_Count)
   {
+    Enc_CountLast = Enc_Count;
     float countValue = data.Enc_LPR * Enc_Count / data.Enc_PPR;
     int RemainTime = (data.Enc_TargetLength - countValue) / data.Enc_LPR;
 
@@ -382,9 +410,10 @@ void loop()
       Message = "Last " + String(RemainTime);
     }
 
-    if (FormView == &Form_Top && prev_v != countValue)
+    //if (FormView == &Form_Top && prev_v != countValue)
+    if (FormView == &Form_Top)
     {
-      prev_v = countValue;
+      //prev_v = countValue;
       // FormView->draw(countValue / 1000.0, String(A) + "," + String(B) + " " + EncLogToString());
       FormView->draw(countValue / 1000.0, Message);
     }
