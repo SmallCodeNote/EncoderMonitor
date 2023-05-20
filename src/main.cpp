@@ -30,27 +30,6 @@ struct DATA_SET
 /// @brief Encorder Profile
 DATA_SET data;
 
-// icon data
-extern unsigned char icon_Setting[2143];
-extern unsigned char icon_Power[1624];
-extern unsigned char icon_M5LOGO[13611];
-extern unsigned char icon_Save[1624];
-
-extern unsigned char btn_OK[1859];
-extern unsigned char btn_CANCEL[2815];
-extern unsigned char btn_Right[1407];
-extern unsigned char btn_Left[1417];
-
-extern unsigned char btn_RESET[1698];
-extern unsigned char icon_QR[1661];
-
-form *FormView;
-form_Top Form_Top;
-form_ShutdownMessage Form_ShutdownMessage;
-form_SaveMessage Form_SaveMessage;
-form_Config Form_Config;
-form_QR Form_QR;
-
 /// @brief Main Display
 M5GFX Display_Main;
 M5Canvas Display_Main_Canvas(&Display_Main);
@@ -161,6 +140,7 @@ void setup()
 
   EEPROM.begin(50); // 50byte
   EEPROM.get<DATA_SET>(0, data);
+
   if (data.Enc_PPR <= 0)
   {
     data.Enc_PPR = 96;
@@ -176,6 +156,7 @@ void setup()
 
   Serial.println("\nInitializeComponent");
   M5.Lcd.setBrightness(50);
+
   InitializeComponent();
 
   xTaskCreatePinnedToCore(taskGetEncoder, "Task0", 4096, NULL, 1, NULL, 0);
@@ -206,7 +187,12 @@ static constexpr const char *state_name[16] =
 
 int prev_x = 0;
 int prev_y = 0;
-int prev_v = 0;
+
+/// @brief QRcode text
+String QRcodeText = "";
+
+/// @brief ConfigForm Up/Down Step
+int ConfigStep = 100;
 
 void loop()
 {
@@ -231,72 +217,71 @@ void loop()
         //================
         // Form_Top
         //================
-        if (touchIndex && FormView == &Form_Top)
+        if (touchIndex >= 0 && FormView == &Form_Top)
         {
-          Serial.println("\nForm_Top tIndex = " + String(touchIndex));
           switch (touchIndex)
           {
-          case 1:
+          case form_Top::touchCheckResult::PowerOff:
             FormView = &Form_ShutdownMessage;
             FormView->draw(0, "");
-            break;
-          case 2:
-            FormView = &Form_Config;
 
+            break;
+
+          case form_Top::touchCheckResult::Config:
+            FormView = &Form_Config;
             Form_Config.Enc_LPR_MIN = data.Enc_LPR / 2;
             Form_Config.Enc_LPR_MAX = data.Enc_LPR * 2;
-
             Form_Config.Enc_PPR_MIN = data.Enc_LPR / 4;
             Form_Config.Enc_PPR_MAX = data.Enc_LPR * 4;
-
             Form_Config.Enc_TargetLength_MIN = (int)(data.Enc_TargetLength / 2.0);
             Form_Config.Enc_TargetLength_MAX = (int)(data.Enc_TargetLength * 2.0);
-
             FormView->draw(0, String(data.Enc_PPR) + "\t" + String(data.Enc_TargetLength) + "\t" + String(data.Enc_LPR));
             break;
-          case 3:
+
+          case form_Top::touchCheckResult::Reset:
             Enc_Count = 0;
             FormView->draw(0, "");
             break;
-          case 4:
+
+          case form_Top::touchCheckResult::QRshow:
             FormView = &Form_QR;
-            FormView->draw(0, String(data.Enc_LPR * Enc_Count / data.Enc_PPR / 1000.0));
+            QRcodeText = String(data.Enc_LPR * Enc_Count / data.Enc_PPR / 1000.0, 3U);
+            FormView->draw(0, QRcodeText);
             break;
 
           default:
             FormView = &Form_Top;
             FormView->draw(0, "");
           }
-
           touchIndex = 0;
         }
-        else if (touchIndex && FormView == &Form_QR)
+        else if (touchIndex >= 0 && FormView == &Form_QR)
         {
           switch (touchIndex)
           {
-          case 1:
+          case form_QR::touchCheckResult::OK:
             FormView = &Form_Top;
             Enc_CountLast = 0;
             FormView->draw(0, "");
-            break;
+
           default:
-            FormView = &Form_Top;
-            FormView->draw(0, "");
+            break;
           }
           touchIndex = 0;
         }
-        else if (touchIndex && FormView == &Form_ShutdownMessage)
+        else if (touchIndex >= 0 && FormView == &Form_ShutdownMessage)
         {
-          Serial.println("\nForm_ShutdownMessage tIndex = " + String(touchIndex));
           switch (touchIndex)
           {
-          case 1:
+          case form_ShutdownMessage::touchCheckResult::OK:
             M5.Power.powerOff();
             break;
-          case 2:
+
+          case form_ShutdownMessage::touchCheckResult::CANCEL:
             FormView = &Form_Top;
             FormView->draw(0, "");
             break;
+
           default:
             FormView = &Form_Top;
             FormView->draw(0, "");
@@ -304,92 +289,87 @@ void loop()
 
           touchIndex = 0;
         }
-        else if (touchIndex && FormView == &Form_SaveMessage)
+        else if (touchIndex >= 0 && FormView == &Form_SaveMessage)
         {
           switch (touchIndex)
           {
-          case 1:
+          case form_SaveMessage::touchCheckResult::OK:
             data.Enc_LPR = Form_Config.Enc_LPR;
             data.Enc_PPR = Form_Config.Enc_PPR;
             data.Enc_TargetLength = Form_Config.Enc_TargetLength;
 
             EEPROM.put<DATA_SET>(0, data);
             EEPROM.commit();
-          case 2:
+
+          case form_SaveMessage::touchCheckResult::CANCEL:
             FormView = &Form_Top;
             FormView->draw(0, "");
             break;
+
           default:
             FormView = &Form_Top;
             FormView->draw(0, "");
           }
           touchIndex = 0;
         }
-        else if (touchIndex && FormView == &Form_Config)
+        else if (touchIndex >= 0 && FormView == &Form_Config)
         {
           switch (touchIndex)
           {
-          case 1:
+          case form_Config::touchCheckResult::OK:
             FormView = &Form_SaveMessage;
             FormView->draw(0, "");
             break;
-          case 2:
+
+          case form_Config::touchCheckResult::CANCEL:
             FormView = &Form_Top;
             FormView->draw(0, "");
             break;
-          case 11:
+
+          case form_Config::touchCheckResult::PPR:
             Form_Config.BTN_PPR.enable = true;
             Form_Config.BTN_TargetLength.enable = false;
             Form_Config.BTN_LPR.enable = false;
-            // Form_Config.BTN_viewFactor.enable = false;
+            ConfigStep = 1;
             FormView->draw(0, String(data.Enc_PPR) + "\t" + String(data.Enc_TargetLength) + "\t" + String(data.Enc_LPR));
-            Serial.println("11");
             break;
-          case 12:
+
+          case form_Config::touchCheckResult::TargetLength:
             Form_Config.BTN_PPR.enable = false;
             Form_Config.BTN_TargetLength.enable = true;
             Form_Config.BTN_LPR.enable = false;
-            // Form_Config.BTN_viewFactor.enable = false;
+            ConfigStep = 100;
             FormView->draw(0, String(data.Enc_PPR) + "\t" + String(data.Enc_TargetLength) + "\t" + String(data.Enc_LPR));
-            Serial.println("12");
             break;
-          case 13:
+
+          case form_Config::touchCheckResult::LPR:
             Form_Config.BTN_PPR.enable = false;
             Form_Config.BTN_TargetLength.enable = false;
             Form_Config.BTN_LPR.enable = true;
-            // Form_Config.BTN_viewFactor.enable = false;
+            ConfigStep = 1;
             FormView->draw(0, String(data.Enc_PPR) + "\t" + String(data.Enc_TargetLength) + "\t" + String(data.Enc_LPR));
-            Serial.println("13");
-
             break;
-          case 14:
-            Form_Config.BTN_PPR.enable = false;
-            Form_Config.BTN_TargetLength.enable = false;
-            Form_Config.BTN_LPR.enable = false;
-            // Form_Config.BTN_viewFactor.enable = true;
-            FormView->draw(0, String(data.Enc_PPR) + "\t" + String(data.Enc_TargetLength) + "\t" + String(data.Enc_LPR));
-            Serial.println("14");
 
-            break;
-          case 15:
-            Serial.println("15");
+          case form_Config::touchCheckResult::valueChange:
             data.Enc_LPR = Form_Config.Enc_LPR;
             data.Enc_PPR = Form_Config.Enc_PPR;
             data.Enc_TargetLength = Form_Config.Enc_TargetLength;
             FormView->draw(0, String(data.Enc_PPR) + "\t" + String(data.Enc_TargetLength) + "\t" + String(data.Enc_LPR));
             break;
-          case 21:
-            Form_Config.setModeValue((Form_Config.getModeValue()).toInt() + 1);
+
+          case form_Config::touchCheckResult::UP:
+            Serial.println("form_Config::touchCheckResult::UP: " + String((Form_Config.getModeValue()).toInt() + ConfigStep));
+            Form_Config.setModeValue((Form_Config.getModeValue()).toInt() + ConfigStep);
             FormView->draw(0, "");
             break;
-          case 22:
-            Form_Config.setModeValue((Form_Config.getModeValue()).toInt() - 1);
+
+          case form_Config::touchCheckResult::DOWN:
+            Form_Config.setModeValue((Form_Config.getModeValue()).toInt() - ConfigStep);
             FormView->draw(0, "");
             break;
 
           default:
             FormView->draw(0, String(data.Enc_PPR) + "\t" + String(data.Enc_TargetLength) + "\t" + String(data.Enc_LPR));
-            Serial.println("default");
           }
 
           touchIndex = 0;
@@ -398,11 +378,11 @@ void loop()
     }
   }
 
-  if(Enc_CountLast != Enc_Count)
+  if (FormView == &Form_Top && Enc_CountLast != Enc_Count)
   {
     Enc_CountLast = Enc_Count;
     float countValue = data.Enc_LPR * Enc_Count / data.Enc_PPR;
-    int RemainTime = (data.Enc_TargetLength - countValue) / data.Enc_LPR;
+    int RemainTime = (data.Enc_TargetLength - abs(countValue)) / data.Enc_LPR;
 
     String Message = "";
     if (data.Enc_TargetLength > 0)
@@ -410,13 +390,8 @@ void loop()
       Message = "Last " + String(RemainTime);
     }
 
-    //if (FormView == &Form_Top && prev_v != countValue)
-    if (FormView == &Form_Top)
-    {
-      //prev_v = countValue;
-      // FormView->draw(countValue / 1000.0, String(A) + "," + String(B) + " " + EncLogToString());
-      FormView->draw(countValue / 1000.0, Message);
-    }
+    FormView->draw(countValue / 1000.0, Message);
+    Serial.print(".");
   }
 
   delay(50);

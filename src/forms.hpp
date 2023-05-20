@@ -12,10 +12,10 @@ extern unsigned char icon_Right[1407];
 extern unsigned char icon_Left[1417];
 extern unsigned char icon_Save[1624];
 
-extern unsigned char btn_OK[1859];
-extern unsigned char btn_CANCEL[2815];
+extern unsigned char icon_OK[1859];
+extern unsigned char icon_CANCEL[2815];
 
-extern unsigned char btn_RESET[1698];
+extern unsigned char icon_RESET[1698];
 extern unsigned char icon_QR[1661];
 
 String getStringSplit(String str, char separator, int index)
@@ -74,7 +74,7 @@ public:
 
     virtual int touchCheck(m5::touch_detail_t t)
     {
-        return 0;
+        return -1;
     }
 };
 
@@ -129,7 +129,7 @@ public:
         BTN_RESET.y = 0;
         BTN_RESET.width = 52;
         BTN_RESET.height = 52;
-        BTN_RESET.iconData = btn_RESET;
+        BTN_RESET.iconData = icon_RESET;
         // ================================
 
         // QR ICON Button ===================
@@ -172,28 +172,36 @@ public:
         }
     }
 
+    enum touchCheckResult
+    {
+        PowerOff,
+        Config,
+        Reset,
+        QRshow
+    };
+
     int touchCheck(m5::touch_detail_t t) override
     {
         if (formEnable)
         {
             if (BTN_Power.contain(t))
             {
-                return 1;
+                return PowerOff;
             }
             else if (BTN_Config.contain(t))
             {
-                return 2;
+                return Config;
             }
             else if (BTN_RESET.contain(t))
             {
-                return 3;
+                return Reset;
             }
             else if (BTN_QR.contain(t))
             {
-                return 4;
+                return QRshow;
             }
         }
-        return 0;
+        return -1;
     }
 };
 
@@ -223,13 +231,13 @@ public:
         formWidth = Display_Main_Canvas.width();
         formHeight = Display_Main_Canvas.height();
 
-        BTN_OK = displayButton();
         // OK ICON Button ===================
+        BTN_OK = displayButton();
         BTN_OK.x = 0;
         BTN_OK.y = 187;
         BTN_OK.width = 160;
         BTN_OK.height = 52;
-        BTN_OK.iconData = btn_OK;
+        BTN_OK.iconData = icon_OK;
         BTN_OK.enable = true;
 
         BTN_CANCEL = displayButton();
@@ -238,7 +246,7 @@ public:
         BTN_CANCEL.y = 187;
         BTN_CANCEL.width = 160;
         BTN_CANCEL.height = 52;
-        BTN_CANCEL.iconData = btn_CANCEL;
+        BTN_CANCEL.iconData = icon_CANCEL;
         BTN_CANCEL.enable = true;
         // ================================
     }
@@ -257,17 +265,23 @@ public:
             Display_Main_Canvas.pushSprite(0, 0);
         }
     }
+
+    enum touchCheckResult
+    {
+        OK,
+        CANCEL
+    };
     int touchCheck(m5::touch_detail_t t)
     {
         if (BTN_OK.contain(t))
         {
-            return 1;
+            return OK;
         }
         else if (BTN_CANCEL.contain(t))
         {
-            return 2;
+            return CANCEL;
         }
-        return 0;
+        return -1;
     }
 };
 
@@ -303,7 +317,7 @@ public:
         BTN_OK.y = 187;
         BTN_OK.width = 160;
         BTN_OK.height = 52;
-        BTN_OK.iconData = btn_OK;
+        BTN_OK.iconData = icon_OK;
         BTN_OK.enable = true;
 
         BTN_CANCEL = displayButton();
@@ -312,7 +326,7 @@ public:
         BTN_CANCEL.y = 187;
         BTN_CANCEL.width = 160;
         BTN_CANCEL.height = 52;
-        BTN_CANCEL.iconData = btn_CANCEL;
+        BTN_CANCEL.iconData = icon_CANCEL;
         BTN_CANCEL.enable = true;
         // ================================
     }
@@ -331,17 +345,22 @@ public:
             Display_Main_Canvas.pushSprite(0, 0);
         }
     }
+    enum touchCheckResult
+    {
+        OK,
+        CANCEL
+    };
     int touchCheck(m5::touch_detail_t t)
     {
         if (BTN_OK.contain(t))
         {
-            return 1;
+            return OK;
         }
         else if (BTN_CANCEL.contain(t))
         {
-            return 2;
+            return CANCEL;
         }
-        return 0;
+        return -1;
     }
 };
 
@@ -377,7 +396,7 @@ public:
         BTN_OK.y = 187;
         BTN_OK.width = 160;
         BTN_OK.height = 52;
-        BTN_OK.iconData = btn_OK;
+        BTN_OK.iconData = icon_OK;
         BTN_OK.enable = true;
         //=====================
     }
@@ -388,18 +407,26 @@ public:
         {
             Display_Main_Canvas.fillScreen(BLACK);
             BTN_OK.draw(Display_Main_Canvas);
-            Display_Main_Canvas.fillRect(0,0,320,180,TFT_WHITE);
-            Display_Main_Canvas.qrcode(text, 50, 20, 140, 4);
+            Display_Main_Canvas.fillRect(0, 0, 320, 180, TFT_WHITE);
+            Display_Main_Canvas.qrcode(text, 320/2-140/2, 20, 140, 4);
+
+            Display_Main_Canvas.setFont(&fonts::lgfxJapanGothic_24);
+            Display_Main_Canvas.setTextColor(0xffd500);
+            Display_Main_Canvas.drawString("[" + text + "]", 2, 240 - 24 - 2);
             Display_Main_Canvas.pushSprite(0, 0);
         }
     }
+    enum touchCheckResult
+    {
+        OK
+    };
     int touchCheck(m5::touch_detail_t t)
     {
         if (BTN_OK.contain(t))
         {
-            return 1;
+            return OK;
         }
-        return 0;
+        return -1;
     }
 };
 
@@ -456,7 +483,7 @@ public:
         BTN_OK.y = 187;
         BTN_OK.width = 160;
         BTN_OK.height = 52;
-        BTN_OK.iconData = btn_OK;
+        BTN_OK.iconData = icon_OK;
         BTN_OK.enable = true;
 
         // CANCEL ICON Button ===================
@@ -465,7 +492,7 @@ public:
         BTN_CANCEL.y = 187;
         BTN_CANCEL.width = 160;
         BTN_CANCEL.height = 52;
-        BTN_CANCEL.iconData = btn_CANCEL;
+        BTN_CANCEL.iconData = icon_CANCEL;
         BTN_CANCEL.enable = true;
         // ================================
 
@@ -569,7 +596,7 @@ public:
         }
         else if (BTN_TargetLength.enable)
         {
-            Enc_TargetLength = value;
+            Enc_TargetLength = (value/100)*100;
         }
         else if (BTN_LPR.enable)
         {
@@ -653,43 +680,67 @@ public:
             Display_Main_Canvas.pushSprite(0, 0);
         }
     }
+
+    /// @brief 
+    enum touchCheckResult
+    {
+        OK,
+        CANCEL,
+        PPR,
+        TargetLength,
+        LPR,
+        UP,
+        DOWN,
+        valueChange
+    };
+
+    /// @brief 
+    /// @param t 
+    /// @return 
     int touchCheck(m5::touch_detail_t t) override
     {
         if (BTN_OK.contain(t))
         {
-            return 1;
+            return OK;
         }
         else if (BTN_CANCEL.contain(t))
         {
-            return 2;
+            return CANCEL;
         }
         else if (BTN_PPR.contain(t))
         {
-            return 11;
+            return PPR;
         }
         else if (BTN_TargetLength.contain(t))
         {
-            return 12;
+            return TargetLength;
         }
         else if (BTN_LPR.contain(t))
         {
-            return 13;
+            return LPR;
         }
         else if (BTN_UP.contain(t))
         {
-            return 21;
+            return UP;
         }
         else if (BTN_DOWN.contain(t))
         {
-            return 22;
+            return DOWN;
         }
         else if (SLD_value.contain(t))
         {
             setModeValue(SLD_value.value);
-            return 15;
+            return valueChange;
         }
-        return 0;
+        return -1;
     }
 };
+
+form *FormView;
+form_Top Form_Top;
+form_ShutdownMessage Form_ShutdownMessage;
+form_SaveMessage Form_SaveMessage;
+form_Config Form_Config;
+form_QR Form_QR;
 
 #endif
