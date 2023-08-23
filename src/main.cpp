@@ -151,7 +151,7 @@ void setup()
   auto cfg = M5.config();
   cfg.serial_baudrate = 19200;
   M5.begin(cfg);
-
+  
   M5.Lcd.setCursor(0, 0);
 
   Serial.println("\nInitializeComponent");
@@ -173,7 +173,9 @@ void setup()
   FormView = &Form_Top;
 
   FormView->formEnable = true;
-  FormView->draw(0, "");
+ 
+  int BatteryLevelValue = M5.Power.getBatteryLevel();
+  FormView->draw(0, "\t" + String(BatteryLevelValue));
 
   M5.Lcd.setCursor(0, 0);
 
@@ -197,7 +199,8 @@ int ConfigStep = 100;
 void loop()
 {
   M5.update();
-
+  int BatteryLevelValue = M5.Power.getBatteryLevel();
+  
   auto count = M5.Touch.getCount();
   if (count)
   {
@@ -251,7 +254,7 @@ void loop()
 
           default:
             FormView = &Form_Top;
-            FormView->draw(0, "");
+            FormView->draw(0, "\t" + String(BatteryLevelValue));
           }
           touchIndex = 0;
         }
@@ -262,7 +265,7 @@ void loop()
           case form_QR::touchCheckResult::OK:
             FormView = &Form_Top;
             Enc_CountLast = 0;
-            FormView->draw(0, "");
+            FormView->draw(0, "\t" + String(BatteryLevelValue));
 
           default:
             break;
@@ -279,12 +282,12 @@ void loop()
 
           case form_ShutdownMessage::touchCheckResult::CANCEL:
             FormView = &Form_Top;
-            FormView->draw(0, "");
+            FormView->draw(0, "\t" + String(BatteryLevelValue));
             break;
 
           default:
             FormView = &Form_Top;
-            FormView->draw(0, "");
+            FormView->draw(0, "\t" + String(BatteryLevelValue));
           }
 
           touchIndex = 0;
@@ -303,12 +306,12 @@ void loop()
 
           case form_SaveMessage::touchCheckResult::CANCEL:
             FormView = &Form_Top;
-            FormView->draw(0, "");
+            FormView->draw(0, "\t" + String(BatteryLevelValue));
             break;
 
           default:
             FormView = &Form_Top;
-            FormView->draw(0, "");
+            FormView->draw(0, "\t" + String(BatteryLevelValue));
           }
           touchIndex = 0;
         }
@@ -323,7 +326,7 @@ void loop()
 
           case form_Config::touchCheckResult::CANCEL:
             FormView = &Form_Top;
-            FormView->draw(0, "");
+            FormView->draw(0, "\t" + String(BatteryLevelValue));
             break;
 
           case form_Config::touchCheckResult::PPR:
@@ -390,7 +393,7 @@ void loop()
       Message = "Last " + String(RemainTime);
     }
 
-    FormView->draw(countValue / 1000.0, Message);
+    FormView->draw(countValue / 1000.0, Message + "\t" + String(BatteryLevelValue));
     Serial.print(".");
   }
 
