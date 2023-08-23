@@ -144,6 +144,9 @@ public:
 
     void draw(float value, String text) override
     {
+        String LastCount = getStringSplit(text, '\t', 0);
+        String BatteryInfo_Level = getStringSplit(text, '\t', 1);
+
         if (formEnable)
         {
             Display_Main_Canvas.fillScreen(BLACK);
@@ -166,7 +169,11 @@ public:
 
             Display_Main_Canvas.setFont(&fonts::lgfxJapanGothic_24);
             Display_Main_Canvas.setTextColor(0xffd500);
-            Display_Main_Canvas.drawString("[" + text + "]", 2, 240 - 24 - 2);
+            Display_Main_Canvas.drawString("[" + LastCount + "]", 2, 240 - 24 - 2);
+
+            Display_Main_Canvas.setFont(&fonts::lgfxJapanGothic_24);
+            Display_Main_Canvas.setTextColor(0xffd500);
+            Display_Main_Canvas.drawString("[BAT=" + BatteryInfo_Level + "%]", 2, 2);
 
             Display_Main_Canvas.pushSprite(0, 0);
         }
@@ -569,6 +576,8 @@ public:
         {
             return "Length per Revolution";
         }
+
+        return "";
     }
 
     String getModeValue()
@@ -585,6 +594,8 @@ public:
         {
             return String(Enc_LPR);
         }
+
+        return "";
     }
 
     void setModeValue(int value)
