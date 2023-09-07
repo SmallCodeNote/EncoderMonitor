@@ -196,6 +196,9 @@ String QRcodeText = "";
 /// @brief ConfigForm Up/Down Step
 int ConfigStep = 100;
 
+/// @brief BatteryLevelValueBuff
+int BatteryLevelValue_last = 0;
+
 void loop()
 {
   M5.update();
@@ -381,7 +384,7 @@ void loop()
     }
   }
 
-  if (FormView == &Form_Top && Enc_CountLast != Enc_Count)
+  if (FormView == &Form_Top && (Enc_CountLast != Enc_Count || BatteryLevelValue_last !=BatteryLevelValue))
   {
     Enc_CountLast = Enc_Count;
     float countValue = data.Enc_LPR * Enc_Count / data.Enc_PPR;
@@ -397,5 +400,8 @@ void loop()
     Serial.print(".");
   }
 
+  BatteryLevelValue_last =BatteryLevelValue;
+
   delay(50);
+
 }
